@@ -142,9 +142,10 @@ Partial flashing will not work in most cases. For more read the documentation.
 ### Whats new:
 - Bugfix: Sensor gets stuck randomly for 1:37h 
 
-###Known Bugs:###
+### Known Bugs:
 - [OSX] App build fails if path has space
 - [OSX] GNU Toolchain for ARM 2017q4 on Mac has a bug that prevents builds
+- Timestamps jump backward on ECG error case
 
 ###Notes:###
 - REQUIRED: Use **Windows** build environment only (due to above GNU OSX bug)
