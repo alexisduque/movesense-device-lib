@@ -1,25 +1,25 @@
 ## Announcements
   
-**(29th Aug 2022) Sensor firmware 2.1.4 is out!**  
+**(25th Apr 2023) Sensor firmware 2.1.5 is out!**  
 
-This is a bugfix release that fixes an issue that was found out after 2.1.3 release. Please test 
+This is a bugfix release that fixes an issue that was found out after 2.1.4 release. Please test 
 your software thoroughly before committing to the 2.x since the sensors cannot be rolled back to 1.9.x!
 
 **Known issues**  
 Please refer to [CHANGES.md](CHANGES.md) for a list of changes & known issues.
 
-**NOTE: The build environment was changed to be docker based in release 2.0. Please read the instruction at http://movesense.com/docs/esw/getting_started/**s
+**NOTE: The build environment was changed to be docker based in release 2.0. Please read the instruction at http://movesense.com/docs/esw/getting_started/**
 
 
 ## Overview
 
 [Movesense sensor](https://www.movesense.com/developers/technology/#developers) is a programmable multi-purpose device comprising of accelerometer, gyroscope, magnetometer and thermometer together with optional heartrate/IBI (inter-beat interval) and intelligent gear ID APIs.  
 
-Movesense APIs follow well-known REST principle and can be used both internally by the sensor app or externally via the iOS/Android libraries. The [API specification](https://bitbucket.org/suunto/movesense-device-lib/src/master/MovesenseCoreLib/resources/movesense-api/) is based on Swagger 2.0 syntax.
+Movesense APIs follow well-known REST principle and can be used both internally by the sensor app or externally via the iOS/Android libraries. The [API specification](https://bitbucket.org/movesense/movesense-device-lib/src/master/MovesenseCoreLib/resources/movesense-api/) is based on Swagger 2.0 syntax.
 
 You can order Movesense sensors and Movesense Developer Kit on our online [shop](https://www.movesense.com/shop/).
 
-Check also [Movesense mobile library](https://bitbucket.org/suunto/movesense-mobile-lib) for developing own Android and iOS applications to interact with the Movesense sensor.  
+Check also [Movesense mobile library](https://bitbucket.org/movesense/movesense-mobile-lib) for developing own Android and iOS applications to interact with the Movesense sensor.  
 
 ## Documentation
 
@@ -65,7 +65,7 @@ The latest information about setting up the toolchain can be found in [documenta
 
 ## Bug reports and other feedback
 
-Please report all bugs by [raising an Issue](https://bitbucket.org/suunto/movesense-device-lib/issues/new) on Bitbucket. 
+Please report all bugs by [raising an Issue](https://bitbucket.org/movesense/movesense-device-lib/issues/new) on Bitbucket, or via email "info(at)movesense.com". 
 
 You can also discuss Movesense related topics on [stack overflow](http://stackoverflow.com/search?q=movesense). If your topic is not already addressed, 
 please [post](http://stackoverflow.com/questions/ask) a new one, tagging it with 'movesense' (i.e. include [tag:movesense] in the question body).  

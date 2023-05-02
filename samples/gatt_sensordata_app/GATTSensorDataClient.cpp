@@ -377,7 +377,7 @@ void GATTSensorDataClient::onNotify(wb::ResourceId resourceId,
         case WB_RES::LOCAL::COMM_BLE_PEERS::LID:
             {
                 WB_RES::PeerChange peerChange = value.convertTo<WB_RES::PeerChange>();
-                if (peerChange.state = peerChange.state.DISCONNECTED)
+                if (peerChange.state == peerChange.state.DISCONNECTED)
                 {
                     // if connection is dropped, unsubscribe all data streams so that sensor does not stay on for no reason
                     unsubscribeAllStreams();

@@ -1,3 +1,25 @@
+## Version 2.1.5.aceeb848 ##
+
+### Whats new:
+- Bugfix: ECG Timestamps dont show missing data [MOV-1193]
+- Bugfix: Info gives Suunto as manufacturer [MOV-1171]
+- Bugfix: PowerOff fails on hrwakeup without using hr [MOV-1169]
+
+### Known Bugs:
+- Datalogger saves wrong format for nullable uint8
+- Flash variant crashes on many log increments (Flash)
+- CustomGATTService cuts some incoming data
+- Info returns BLE address in non-standard format
+- /Meas/Magn data sometimes glitches
+- Crash on DataLogger config more than 4 paths
+- GearID subscription crashes if connector state subscribed (HR2/HR+)
+- /Comm/Ble/Scan only returns one result
+
+
+### Notes:
+- This will be a combined medical and sport release. For medical clients, please download the 
+default firmware and library from the [medical releases repository](https://bitbucket.org/suunto/movesense-medical-sw).
+
 ## Version 2.1.4.1c3320a6d89b1d ##
 
 ### Whats new:

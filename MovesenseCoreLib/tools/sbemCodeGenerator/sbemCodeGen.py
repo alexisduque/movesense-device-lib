@@ -12,7 +12,7 @@ from SbemCodeGenFuncs import *
 #################################################
 # script debugging config for further developing
 #################################################
-debugEnabled = True
+debugEnabled = False
 try:
     from PyObjTool import *
     def debugWrite(filename, string, mode="a"):
@@ -170,12 +170,12 @@ for resFile in resourceFiles:
                     currentResource = ""
 
 
-#for k, v in cppTypes.iteritems():
+#for k, v in cppTypes.items():
 #    print k, v
 
-#for k, v in definitions.iteritems():
+#for k, v in definitions.items():
 #    if 'properties' in v:
-#        for k2,v2 in v['properties'].iteritems():
+#        for k2,v2 in v['properties'].items():
 #            print str(k) + "::" + str(decapitalize(k2))
 
 # filter out the resources that are not in cppResources
@@ -196,7 +196,7 @@ newResources = None
 # scan datatype (schema) definitions and preprocess them
 simpleTypes = {}
 complexTypes = {}
-for k,v in sorted(definitions.iteritems()):
+for k,v in sorted(definitions.items()):
 
     # Scan properties that the datatype contains
 #    print("Scan properties for: ", k)
@@ -225,7 +225,7 @@ prevCount = 65535
 while(runAgain):
     notHandledTypes = {}
 
-    for k,v in sorted(complexTypes.iteritems()):
+    for k,v in sorted(complexTypes.items()):
         #print("complexTypes handling for: ", k);
 
         requiredProps = []
@@ -237,7 +237,7 @@ while(runAgain):
         #if not 'properties' in v:
             #print("Type with no properties! ", k , " : ", v)
 
-        for propname, propvalue in v['properties'].iteritems():
+        for propname, propvalue in v['properties'].items():
 
             # is prop required
             propvalue['__required'] = propname in requiredProps
@@ -283,7 +283,7 @@ print("Scanning ", len(resources), " WB-resources")
 resourcesWithSimpleType = {}
 resourcesWithComplexType = {}
 items = []
-for k,v in sorted(resources.iteritems()):
+for k,v in sorted(resources.items()):
     # skip if resource does not have subscribe verb with response
 #    print("resource: ", k)
 
@@ -362,7 +362,7 @@ for k,v in sorted(resources.iteritems()):
 # Creating groups for complex datatypes
 print("Creating SBEM-Groups")
 groups = []
-for k,v in sorted(resourcesWithComplexType.iteritems()):
+for k,v in sorted(resourcesWithComplexType.items()):
 
     resource = v
     if not '__datatype' in resource:
@@ -413,9 +413,10 @@ for item in items:
 items = u_items
 
 print("Generating C++ code. ", len(groups), " groups, ", len(items), " items")
+print("Current folder: ", os.getcwd())
 
-with open("sbem_definitions.h", 'wb') as f_h:
-    with open("sbem_definitions.cpp", 'wb') as f_cpp:
+with open("sbem_definitions.h", 'w') as f_h:
+    with open("sbem_definitions.cpp", 'w') as f_cpp:
         # write top of h.file
         print('#pragma once', file=f_h)
         print('#include "sbem_types.h"', file=f_h)
@@ -581,7 +582,7 @@ with open("sbem_definitions.h", 'wb') as f_h:
         resourcesThatNeedSbemMethods = {}
 
         # Scan resources and choose those that need methods generated for them
-        for k,v in sorted(resources.iteritems()):
+        for k,v in sorted(resources.items()):
             writeMethodCode = ""
             itemsToGenerate = []
             if 'SBEM_ITEM' in v:
@@ -607,7 +608,7 @@ with open("sbem_definitions.h", 'wb') as f_h:
                 print("skipping unsupported resource: ", k)
 
         # Generate functions to write wbObject as SBEM into buffer
-        for k,v in sorted(resourcesThatNeedSbemMethods.iteritems()):
+        for k,v in sorted(resourcesThatNeedSbemMethods.items()):
             itemsToDo = v['__itemsToGenerate']
 
             # reset loop index numbering
@@ -641,7 +642,7 @@ with open("sbem_definitions.h", 'wb') as f_h:
 
 
         # Generate function to calculate sbem packet length for given resource & data
-        for k,v in sorted(resourcesThatNeedSbemMethods.iteritems()):
+        for k,v in sorted(resourcesThatNeedSbemMethods.items()):
             getLengthMethodCode = ""
             itemsToDo = v['__itemsToGenerate']
 
@@ -674,7 +675,7 @@ with open("sbem_definitions.h", 'wb') as f_h:
         getLengthMethodCode += '    switch(localResId)\n'
         getLengthMethodCode += '    {\n'
 
-        for k,v in sorted(resourcesThatNeedSbemMethods.iteritems()):
+        for k,v in sorted(resourcesThatNeedSbemMethods.items()):
             itemsToDo = v['__itemsToGenerate']
 
             if not hasVariableLengthItems(itemsToDo):
@@ -697,7 +698,7 @@ with open("sbem_definitions.h", 'wb') as f_h:
         getLengthMethodCode += '    switch(localResId)\n'
         getLengthMethodCode += '    {\n'
 
-        for k,v in sorted(resourcesThatNeedSbemMethods.iteritems()):
+        for k,v in sorted(resourcesThatNeedSbemMethods.items()):
             getLengthMethodCode += '    case WB_RES::LOCAL::' + cppNameFromResName(k) + '::LID:\n'
             getLengthMethodCode += '        return getSbemLength_' +cppNameFromResName(k) + '(data.convertTo<WB_RES::LOCAL::' + cppNameFromResName(k) + '::EVENT::NotificationType>());\n'
 
@@ -717,7 +718,7 @@ with open("sbem_definitions.h", 'wb') as f_h:
         writeMethodCode += '    switch(localResId)\n'
         writeMethodCode += '    {\n'
 
-        for k,v in sorted(resourcesThatNeedSbemMethods.iteritems()):
+        for k,v in sorted(resourcesThatNeedSbemMethods.items()):
             writeMethodCode += '    case WB_RES::LOCAL::' + cppNameFromResName(k) + '::LID:\n'
             writeMethodCode += '        return writeToSbemBuffer_' +cppNameFromResName(k) + '(buffer, bufferLen, startOffset, data.convertTo<WB_RES::LOCAL::' + cppNameFromResName(k) + '::EVENT::NotificationType>());\n'
 
@@ -734,7 +735,7 @@ with open("sbem_definitions.h", 'wb') as f_h:
         # Generate resourceId => SbemItem mapping table (single items)
         tableString = "\nconst SbemResID2ItemIdMapping s_sbemResID2ItemIdMap[] = {\r\n"
         count = 0
-        for k,v in sorted(resourcesThatNeedSbemMethods.iteritems()):
+        for k,v in sorted(resourcesThatNeedSbemMethods.items()):
             if 'SBEM_GRP' in v:
                 continue
 
@@ -756,7 +757,7 @@ with open("sbem_definitions.h", 'wb') as f_h:
         # Generate resourceId => SbemGrp mapping table
         print("\nconst SbemResID2GrpIdMapping s_sbemResID2GrpIdMap[] = {", file=f_cpp)
         count = 0
-        for k,v in sorted(resourcesThatNeedSbemMethods.iteritems()):
+        for k,v in sorted(resourcesThatNeedSbemMethods.items()):
             if not 'SBEM_GRP' in v:
                 continue
 

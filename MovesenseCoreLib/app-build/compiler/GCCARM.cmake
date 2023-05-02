@@ -9,6 +9,12 @@ if(NOT EXISTS ${LINKER_SCRIPTS_PATH}/${BSP_LINKTO}.ld)
     message(FATAL_ERROR "BSP_LINKTO not chosen or invalid (cannot find ${LINKER_SCRIPTS_PATH}/${BSP_LINKTO}.ld or is not valid)")
 endif()
 
+
+# Get rid of default release optimization flag -O3 that comes from
+# CMake_installation_dir/share/.../Modules/Compiler/GNU.cmake
+set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG" CACHE STRING "" FORCE)
+
 # redefine the types to use for INT32 and UINT32 (driving the stdint.h setup)
 # otherwise int32_t and uint32_t are based on long, and while it's also 32-bit
 # in GCCARM targets, it will cause various unwanted issues with WB templates

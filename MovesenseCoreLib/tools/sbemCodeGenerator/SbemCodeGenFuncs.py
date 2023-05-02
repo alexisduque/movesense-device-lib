@@ -23,14 +23,14 @@ def readInYamlFiles(yamlFiles):
     definitions = {}
 
     for f in yamlFiles:
-        stream = file(f, 'r')
-        obj = yaml.load(stream)
+        stream = open(f, 'r')
+        obj = yaml.safe_load(stream)
         obj["fromFile"] = f
 
         yamlTrees.append(obj)
 
         if 'paths' in obj:
-            for k, v in sorted(obj['paths'].iteritems()):
+            for k, v in sorted(obj['paths'].items()):
                 if k.endswith('/Subscription'):
                     k = k[:-len('/Subscription')]
                     if k not in resources:
@@ -41,7 +41,7 @@ def readInYamlFiles(yamlFiles):
                     resources[k] = v
 
         if ('definitions' in obj):
-            for k, v in obj['definitions'].iteritems():
+            for k, v in obj['definitions'].items():
                 definitions[k] = v
                 #print("yaml datatype: ", k, " ", v)
 
@@ -628,7 +628,7 @@ def generateGroupsForResAndDatatype(defs, resource, path, datatype, resourceGrou
     subItems = []
 
     # do each property, recurse into complex ones
-    for k,v in sorted(datatype['properties'].iteritems()):
+    for k,v in sorted(datatype['properties'].items()):
 
         if not 'SBEM_KIND' in v:
             print(" ERROR! v:",v)
