@@ -11,4 +11,3 @@ if(NOT IS_ABSOLUTE ${MOVESENSE_CORE_LIBRARY})
 endif()
 
 include(${MOVESENSE_CORE_LIBRARY}/MovesenseFromStaticLib.cmake REQUIRED)
-

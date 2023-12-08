@@ -32,10 +32,9 @@ static const unsigned short WHITEBOARD_METRICS_COMM_LID = 265;
 static const unsigned short WHITEBOARD_METRICS_EVENTS_LID = 266;
 static const unsigned short WHITEBOARD_METRICS_POOLS_LID = 267;
 static const unsigned short WHITEBOARD_SYSTEM_LAUNCHER_LID = 268;
-static const unsigned short WHITEBOARD_TEST_BYPASS_LID = 269;
-static const unsigned short WHITEBOARD_TEST_ECHO_LID = 270;
-static const unsigned short WHITEBOARD_TEST_NULL_LID = 271;
-static const unsigned short WHITEBOARD_TEST_PING_LID = 272;
-static const unsigned short WHITEBOARD_TEST_ZERO_LID = 273;
-static const unsigned short WHITEBOARD_TIME_LID = 274;
+static const unsigned short WHITEBOARD_TEST_ECHO_LID = 269;
+static const unsigned short WHITEBOARD_TEST_NULL_LID = 270;
+static const unsigned short WHITEBOARD_TEST_PING_LID = 271;
+static const unsigned short WHITEBOARD_TEST_ZERO_LID = 272;
+static const unsigned short WHITEBOARD_TIME_LID = 273;
 

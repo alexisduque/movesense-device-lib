@@ -3165,185 +3165,11 @@ struct WHITEBOARD_SYSTEM_LAUNCHER
 
 struct WHITEBOARD_TEST;
 
-struct WHITEBOARD_TEST_BYPASS
+struct WHITEBOARD_TEST_ECHO
 {
 	static const whiteboard::ExecutionContextId EXECUTION_CONTEXT = WB_EXEC_CTX_APPLICATION;
 	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 269, EXECUTION_CONTEXT);
 	static const whiteboard::LocalResourceId LID = 269;
-
-	struct GET
-	{
-		typedef whiteboard::StronglyTypedResult<const char*, whiteboard::HTTP_CODE_OK> HTTP_CODE_OK;
-		typedef whiteboard::StronglyTypedResult<const whiteboard::NoType&, whiteboard::HTTP_CODE_BAD_REQUEST> HTTP_CODE_BAD_REQUEST;
-		typedef whiteboard::StronglyTypedResult<const whiteboard::NoType&, whiteboard::HTTP_CODE_RANGE_NOT_SATISFIABLE> HTTP_CODE_RANGE_NOT_SATISFIABLE;
-
-		struct Parameters
-		{
-			struct INDEX
-			{
-				static const whiteboard::ParameterIndex Index = 0;
-
-				typedef uint16 Type;
-				typedef Type ConstReferenceType;
-			};
-
-			typedef INDEX Parameter1;
-
-			static const whiteboard::ParameterIndex NUMBER_OF_PARAMETERS = 1;
-		};
-
-		/** Reference wrapper for strongly typed parameter list for /Whiteboard/Test/Bypass */
-		class ParameterListRef
-		{
-		private:
-			/** Prevent use of default constructor */
-			ParameterListRef() DELETED;
-
-			/** Prevent use of copy constructor */
-			ParameterListRef(const ParameterListRef&) DELETED;
-
-			/** Prevent use of assignment operator */
-			const ParameterListRef& operator=(const ParameterListRef&) DELETED;
-
-		public:
-			/** Constructor that initializes this class from existing parameter list
-			*
-			* @param rParameterList Reference to parameter list that contains untyped parameters
-			*/
-			inline ParameterListRef(const whiteboard::ParameterList& rParameterList)
-				: mrParameterList(rParameterList)
-			{
-			}
-
-			/** Gets INDEX parameter value
-			*
-			* @return Current parameter value
-			*/
-			inline Parameters::INDEX::ConstReferenceType getIndex() const
-			{
-				return mrParameterList[Parameters::INDEX::Index].convertTo<Parameters::INDEX::ConstReferenceType>();
-			}
-
-		private:
-			/** Reference to actual parameter list */
-			const whiteboard::ParameterList& mrParameterList;
-		};
-
-		/** Compile time type checking */
-		inline static void typeCheck(
-			Parameters::INDEX::ConstReferenceType)
-		{
-		}
-	};
-
-	struct PUT
-	{
-		typedef whiteboard::StronglyTypedResult<const char*, whiteboard::HTTP_CODE_ACCEPTED> HTTP_CODE_ACCEPTED;
-		typedef whiteboard::StronglyTypedResult<const whiteboard::NoType&, whiteboard::HTTP_CODE_BAD_REQUEST> HTTP_CODE_BAD_REQUEST;
-		typedef whiteboard::StronglyTypedResult<const whiteboard::NoType&, whiteboard::HTTP_CODE_NOT_FOUND> HTTP_CODE_NOT_FOUND;
-		typedef whiteboard::StronglyTypedResult<const whiteboard::NoType&, whiteboard::HTTP_CODE_PRECOND_FAILED> HTTP_CODE_PRECOND_FAILED;
-		typedef whiteboard::StronglyTypedResult<const whiteboard::NoType&, whiteboard::HTTP_CODE_NOT_IMPLEMENTED> HTTP_CODE_NOT_IMPLEMENTED;
-		typedef whiteboard::StronglyTypedResult<const whiteboard::NoType&, whiteboard::HTTP_CODE_INSUFFICIENT_STORAGE> HTTP_CODE_INSUFFICIENT_STORAGE;
-
-		struct Parameters
-		{
-			struct PATHTOBYPASS
-			{
-				static const whiteboard::ParameterIndex Index = 0;
-
-				typedef const char* Type;
-				typedef Type ConstReferenceType;
-			};
-
-			typedef PATHTOBYPASS Parameter1;
-
-			struct REMOTEPATH
-			{
-				static const whiteboard::ParameterIndex Index = 1;
-
-				typedef const char* Type;
-				typedef Type ConstReferenceType;
-			};
-
-			typedef REMOTEPATH Parameter2;
-
-			static const whiteboard::ParameterIndex NUMBER_OF_PARAMETERS = 2;
-		};
-
-		/** Reference wrapper for strongly typed parameter list for /Whiteboard/Test/Bypass */
-		class ParameterListRef
-		{
-		private:
-			/** Prevent use of default constructor */
-			ParameterListRef() DELETED;
-
-			/** Prevent use of copy constructor */
-			ParameterListRef(const ParameterListRef&) DELETED;
-
-			/** Prevent use of assignment operator */
-			const ParameterListRef& operator=(const ParameterListRef&) DELETED;
-
-		public:
-			/** Constructor that initializes this class from existing parameter list
-			*
-			* @param rParameterList Reference to parameter list that contains untyped parameters
-			*/
-			inline ParameterListRef(const whiteboard::ParameterList& rParameterList)
-				: mrParameterList(rParameterList)
-			{
-			}
-
-			/** Gets PATHTOBYPASS parameter value
-			*
-			* @return Current parameter value
-			*/
-			inline Parameters::PATHTOBYPASS::ConstReferenceType getPathToBypass() const
-			{
-				return mrParameterList[Parameters::PATHTOBYPASS::Index].convertTo<Parameters::PATHTOBYPASS::ConstReferenceType>();
-			}
-
-			/** Checks whether optional parameter REMOTEPATH has a value
-			*
-			* @return A value indicating whether the parameter has a value
-			*/
-			inline bool hasRemotePath() const
-			{
-				if (mrParameterList.getNumberOfParameters() <= Parameters::REMOTEPATH::Index)
-				{
-					return false;
-				}
-
-				return mrParameterList[Parameters::REMOTEPATH::Index].getType() != whiteboard::WB_TYPE_NONE;
-			}
-
-			/** Gets REMOTEPATH parameter value
-			*
-			* @return Current parameter value
-			*/
-			inline Parameters::REMOTEPATH::ConstReferenceType getRemotePath() const
-			{
-				return mrParameterList[Parameters::REMOTEPATH::Index].convertTo<Parameters::REMOTEPATH::ConstReferenceType>();
-			}
-
-		private:
-			/** Reference to actual parameter list */
-			const whiteboard::ParameterList& mrParameterList;
-		};
-
-		/** Compile time type checking */
-		inline static void typeCheck(
-			Parameters::PATHTOBYPASS::ConstReferenceType,
-			const whiteboard::Api::OptionalParameter<Parameters::REMOTEPATH::ConstReferenceType>& = whiteboard::NoType::NoValue)
-		{
-		}
-	};
-};
-
-struct WHITEBOARD_TEST_ECHO
-{
-	static const whiteboard::ExecutionContextId EXECUTION_CONTEXT = WB_EXEC_CTX_APPLICATION;
-	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 270, EXECUTION_CONTEXT);
-	static const whiteboard::LocalResourceId LID = 270;
 
 	struct GET
 	{
@@ -3412,8 +3238,8 @@ struct WHITEBOARD_TEST_ECHO
 struct WHITEBOARD_TEST_NULL
 {
 	static const whiteboard::ExecutionContextId EXECUTION_CONTEXT = WB_EXEC_CTX_APPLICATION;
-	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 271, EXECUTION_CONTEXT);
-	static const whiteboard::LocalResourceId LID = 271;
+	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 270, EXECUTION_CONTEXT);
+	static const whiteboard::LocalResourceId LID = 270;
 
 	struct PUT
 	{
@@ -3482,8 +3308,8 @@ struct WHITEBOARD_TEST_NULL
 struct WHITEBOARD_TEST_PING
 {
 	static const whiteboard::ExecutionContextId EXECUTION_CONTEXT = WB_EXEC_CTX_APPLICATION;
-	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 272, EXECUTION_CONTEXT);
-	static const whiteboard::LocalResourceId LID = 272;
+	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 271, EXECUTION_CONTEXT);
+	static const whiteboard::LocalResourceId LID = 271;
 
 	struct GET
 	{
@@ -3504,8 +3330,8 @@ struct WHITEBOARD_TEST_PING
 struct WHITEBOARD_TEST_ZERO
 {
 	static const whiteboard::ExecutionContextId EXECUTION_CONTEXT = WB_EXEC_CTX_APPLICATION;
-	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 273, EXECUTION_CONTEXT);
-	static const whiteboard::LocalResourceId LID = 273;
+	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 272, EXECUTION_CONTEXT);
+	static const whiteboard::LocalResourceId LID = 272;
 
 	struct GET
 	{
@@ -3526,8 +3352,8 @@ struct WHITEBOARD_TEST_ZERO
 struct WHITEBOARD_TIME
 {
 	static const whiteboard::ExecutionContextId EXECUTION_CONTEXT = WB_EXEC_CTX_APPLICATION;
-	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 274, EXECUTION_CONTEXT);
-	static const whiteboard::LocalResourceId LID = 274;
+	static const whiteboard::ResourceId::Value ID = WB_RESOURCE_VALUE(0, 273, EXECUTION_CONTEXT);
+	static const whiteboard::LocalResourceId LID = 273;
 
 	struct GET
 	{

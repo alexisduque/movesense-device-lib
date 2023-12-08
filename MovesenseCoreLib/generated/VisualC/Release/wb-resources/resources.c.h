@@ -23,6 +23,5 @@ static const unsigned short NET_LID = 256;
 static const unsigned short WHITEBOARD_INFO_LID = 257;
 static const unsigned short WHITEBOARD_METRICS_COMM_LID = 258;
 static const unsigned short WHITEBOARD_SYSTEM_LAUNCHER_LID = 259;
-static const unsigned short WHITEBOARD_TEST_BYPASS_LID = 260;
-static const unsigned short WHITEBOARD_TIME_LID = 261;
+static const unsigned short WHITEBOARD_TIME_LID = 260;
 

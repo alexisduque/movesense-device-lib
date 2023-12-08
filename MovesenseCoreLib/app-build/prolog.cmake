@@ -31,7 +31,7 @@ set(TOOLS_PATH ${MOVESENSE_CORE_LIBRARY}/tools)
 # check if the host is windows
 if (NOT CMAKE_HOST_WIN32)
     message(STATUS "PATH_TOOL_PYTHON will use python from shell PATH")
-    set(PATH_TOOL_PYTHON python)
+    set(PATH_TOOL_PYTHON python3)
 else()
 	# get winpython tool from movesense-device-lib downloads
 	include(FetchContent)

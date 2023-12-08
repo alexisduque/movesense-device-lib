@@ -5,7 +5,7 @@ set(GCCARM_USE_LTO True CACHE BOOL "Enable link-time optimization in GCC build")
 set(LINKER_SCRIPTS_PATH ${CMAKE_CURRENT_LIST_DIR}/../platform/${BSP}/linker/gcc )
 
 # Check that the relevant linker file exists
-if(NOT EXISTS ${LINKER_SCRIPTS_PATH}/${BSP_LINKTO}.ld)
+if(NOT EXISTS ${LINKER_SCRIPTS_PATH}/${BSP_LINKTO}.ld.S)
     message(FATAL_ERROR "BSP_LINKTO not chosen or invalid (cannot find ${LINKER_SCRIPTS_PATH}/${BSP_LINKTO}.ld or is not valid)")
 endif()
 

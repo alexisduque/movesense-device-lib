@@ -101,10 +101,8 @@ async def run_ble_client(end_of_serial: str, queue: asyncio.Queue):
         """Simple notification handler which prints the data received."""
         d = DataView(data)
         # Dig data from the binary
-        msg = "Data: ts: {}, ax: {}, ay: {}, az: {}".format(d.get_uint_32(2), 
-            d.get_float_32(6), 
-            d.get_float_32(10), 
-            d.get_float_32(14))
+        msg = "Data: offset: {}, len: {}".format(d.get_uint_32(2), 
+            len(d.array))
         # queue message for later consumption
         await queue.put(msg)
 

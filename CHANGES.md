@@ -1,3 +1,59 @@
+
+## Version 2.2.0.56f9997 ##
+
+### Whats new:
+- Feature: Two BLE Connections (Issue #103)
+- Feature: Custom BLE stack configuration (see: MOVESENSE_BLE_CONFIG* -macros in movesense.h)
+- Feature: Adjustable HEAP size (MOVESENSE_HEAP_SIZE -variable in cmake)
+- Feature: User specified BLE connection parameters
+- Feature: Add possibility to force DLE
+- Feature: Added HWCONFIG in /Info
+- Feature: 2M BLE PHY as default
+- Feature: Time sync in Logbook logs
+
+####
+- New Sample: dual_ble_ecgrr_app
+- New Sample: offline_gatt_app
+- New Sample: simple_ecglogger_app
+- Improved Sample: Log fetch support for gatt_sensordata_app
+
+####
+- Bugfix: Crash on DataLogger more than 4 paths
+- Bugfix: Logbook memory area crash when size zero
+- Bugfix: ECG/info gives wrong current sample rate
+- Bugfix: Setting UARTon return true when not set
+- Bugfix: Module APIs can't access builtinTypes definitions
+- Bugfix: Flash variant resets before mem full (Flash)
+- Bugfix: Info returns BLE address in non-standard format
+- Bugfix: Magn data sometimes glitches
+- Bugfix: Flash variant crashes on many log increments (Flash)
+- Bugfix: SBEM data structure uses lot of mem in JSON-conversion (Flash)
+- Bugfix: /Meas/IMU/Info gives invalid magnetometer scalings
+- Bugfix: Flash variant doesn't allow EEPROM access (Flash)
+- Bugfix: Flash variant firmware doesn't work in release build (Flash)
+- Bugfix: NordicUART sometimes asserts on disconnect
+- Bugfix: GearID subscription crashes if connector state subscribed
+- Bugfix: Datalogger format converter creates invalid sbem descriptor
+- Bugfix: DataLogger state LOGGING after low-volt stop (Flash)
+- Bugfix: Slow log transfer on some Samsung phones (Flash)
+- Bugfix: Flash variant crashes on datalogger start if fetching log (Flash)
+
+
+### Known Bugs:
+- /Comm/Ble/Scan only returns one result (since 2.0)
+- Each HR recording seems to start with high HR like 160bpm
+- CustomGATTService cuts some incoming data
+- Sensor stream stops on dual connection disconnect
+- Datalogger saves wrong format for nullable uint8
+- IMU9 Timestamp dont indicate data loss
+- /Gear/ID returns ok if HR-chip has allocated studs
+- sbem array-lengths config fails for /Meas/HR
+
+### Notes:
+- **This is a development release, not meant for production use!**
+- Renamed *LOGBOOK_MEMORY_AREA* to *LOGBOOK_EEPROM_MEMORY_AREA*
+- **NOTE**: The Logbook json format has been changed from 2.1.x to be more efficient in JSON conversion.
+
 ## Version 2.1.5.aceeb848 ##
 
 ### Whats new:
