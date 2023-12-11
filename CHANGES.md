@@ -50,7 +50,6 @@
 - sbem array-lengths config fails for /Meas/HR
 
 ### Notes:
-- **This is a development release, not meant for production use!**
 - Renamed *LOGBOOK_MEMORY_AREA* to *LOGBOOK_EEPROM_MEMORY_AREA*
 - **NOTE**: The Logbook json format has been changed from 2.1.x to be more efficient in JSON conversion.
 
