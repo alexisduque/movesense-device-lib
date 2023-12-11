@@ -34,7 +34,7 @@ OneWireTempService::OneWireTempService():
     mCurrentCmd(NO_COMMAND),
     mDeviceCount(0),
     mNextIdxToMeasure(0),
-    mMeasurements{0},
+    mMeasurements{},
     mDeviceHandles{0}
 {
 }

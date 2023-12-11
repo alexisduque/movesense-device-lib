@@ -26,18 +26,17 @@ OPTIONAL_CORE_MODULE(BleNordicUART, false)
 OPTIONAL_CORE_MODULE(CustomGattService, false)
 
 // NOTE: It is inadvisable to enable both Logbook/DataLogger and EepromService without
-// explicit definition of Logbook memory are (see LOGBOOK_MEMORY_AREA macro in movesense.h).
+// explicit definition of Logbook memory are (see LOGBOOK_EEPROM_MEMORY_AREA macro in movesense.h).
 // Default setting is for Logbook to use the whole EEPROM memory area.
 
 // NOTE: If building a simulator build, these macros are obligatory!
 DEBUGSERVICE_BUFFER_SIZE(6, 120); // 6 lines, 120 characters total
 DEBUG_EEPROM_MEMORY_AREA(false, 0, 0)
-LOGBOOK_MEMORY_AREA(0, MEMORY_SIZE_FILL_REST);
+LOGBOOK_EEPROM_MEMORY_AREA(0, MEMORY_SIZE_FILL_REST);
 
 APPINFO_NAME("Sample Blinky");
 APPINFO_VERSION("1.1.0");
 APPINFO_COMPANY("Movesense");
 
-// NOTE: SERIAL_COMMUNICATION macro has been DEPRECATED
-BLE_COMMUNICATION(true)
+// NOTE: SERIAL_COMMUNICATION & BLE_COMMUNICATION macros have been DEPRECATED
 MOVESENSE_FEATURES_END()

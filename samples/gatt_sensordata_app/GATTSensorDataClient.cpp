@@ -6,6 +6,7 @@
 
 #include "comm_ble_gattsvc/resources.h"
 #include "comm_ble/resources.h"
+#include "mem_logbook/resources.h"
 #include "meas_temp/resources.h"
 
 // Functions for serializing binary data
@@ -34,6 +35,9 @@ GATTSensorDataClient::GATTSensorDataClient():
     mNotificationsEnabled(false),
     mSensorSvcHandle(0),
     mCommandCharHandle(0),
+    mLogIdToFetch(0),
+    mLogFetchOffset(0),
+    mLogFetchReference(0),
     mDataCharHandle(0)
 {
 }
@@ -135,17 +139,38 @@ void GATTSensorDataClient::configGattSvc()
 // UNSUBSCRIBE (=2)
 //   no data
 //   reference must match one given in SUBSCRIBE command
+// 
+// FETCH_LOG (=3)
+//   data == uint32, the logId of the log to fetch
+//   Returns data in DATA & DATA_PART2 responses in the format of the 
+//   logbook/data/subscription (uint32 offset + byte array). End is indicated by empty byte array(s)
+
 enum Commands 
 {
     HELLO = 0,
     SUBSCRIBE = 1,
     UNSUBSCRIBE = 2,
+    FETCH_LOG = 3,
 };
 enum Responses 
 {
     COMMAND_RESULT = 1,
     DATA = 2,
+    DATA_PART2 = 3, // In case the subscription data is larger than fits in the single BLE packet, continue with Part2 & 3
+    DATA_PART3 = 4,
 };
+
+
+GATTSensorDataClient::DataSub* GATTSensorDataClient::findDataSub(const wb::LocalResourceId localResourceId)
+{
+    for (size_t i=0; i<MAX_DATASUB_COUNT; i++)
+    {
+        const DataSub &ds= mDataSubs[i];
+        if (ds.resourceId.localResourceId == localResourceId)
+            return &(mDataSubs[i]);
+    }
+    return nullptr;
+}
 
 GATTSensorDataClient::DataSub* GATTSensorDataClient::findDataSub(const wb::ResourceId resourceId)
 {
@@ -157,6 +182,7 @@ GATTSensorDataClient::DataSub* GATTSensorDataClient::findDataSub(const wb::Resou
     }
     return nullptr;
 }
+
 GATTSensorDataClient::DataSub*  GATTSensorDataClient::findDataSubByRef(const uint8_t clientReference)
 {
     for (size_t i=0; i<MAX_DATASUB_COUNT; i++)
@@ -231,6 +257,19 @@ void GATTSensorDataClient::handleIncomingCommand(const wb::Array<uint8> &command
             asyncSubscribe(dataSub.resourceId, AsyncRequestOptions::ForceAsync);
         }
         break;
+        case Commands::FETCH_LOG:
+        {
+            // Use the "old" API for fetching the log (GET)
+            ASSERT(pData != nullptr);
+            ASSERT(dataLen == sizeof(uint32_t));
+            
+            memcpy(&mLogIdToFetch, pData, dataLen);
+            mLogFetchReference = reference;
+
+            // TODO: Is there need for descriptors? Probably not but needs extra logic if there is.
+            asyncGet(WB_RES::LOCAL::MEM_LOGBOOK_BYID_LOGID_DATA(), AsyncRequestOptions::ForceAsync, mLogIdToFetch);
+            break;
+        }
         case Commands::UNSUBSCRIBE:
         {
             DEBUGLOG("Commands::UNSUBSCRIBE. reference: %d", reference);
@@ -296,6 +335,37 @@ void GATTSensorDataClient::onGetResult(wb::RequestId requestId,
             asyncSubscribe(mDataCharResource,  AsyncRequestOptions(NULL, 0, true));
             break;
         }
+
+        case WB_RES::LOCAL::MEM_LOGBOOK_BYID_LOGID_DATA::LID:
+        {
+            const auto &stream = rResultData.convertTo<const wb::ByteStream &>();
+            DEBUGLOG("MEM_LOGBOOK_BYID_LOGID_DATA. resultCode: %d", resultCode);
+            if (resultCode >= 400)
+            {
+                // Don't do a thing...
+                return;
+            }
+
+            DEBUGLOG("Sendind from get. size: %d", stream.length());
+
+            handleSendingLogbookData(stream.data, stream.length());
+            if (resultCode == wb::HTTP_CODE_CONTINUE)
+            {
+                // Do another GET request to get the next bytes (needs to be async)
+                asyncGet(WB_RES::LOCAL::MEM_LOGBOOK_BYID_LOGID_DATA(), AsyncRequestOptions::ForceAsync, mLogIdToFetch);
+            }
+            if (resultCode == wb::HTTP_CODE_OK)
+            {
+                DEBUGLOG("Fetching log complete. sending end marker.");
+                // Send end marker (offset and no bytes)
+                handleSendingLogbookData(nullptr, 0);
+                // Mark "no current log"
+                mLogIdToFetch=0;
+                mLogFetchOffset=0;
+                mLogFetchReference=0;
+            }
+            break;
+        }
     }
 }
 
@@ -305,7 +375,7 @@ void  GATTSensorDataClient::onSubscribeResult(wb::RequestId requestId,
                                               wb::Result resultCode,
                                               const wb::Value& rResultData)
 {
-    DEBUGLOG("onSubscribeResult() resourceId: %u", resourceId);
+    DEBUGLOG("onSubscribeResult() resourceId: %u, resultCode: %d", resourceId, resultCode);
 
     switch (resourceId.localResourceId)
     {
@@ -350,6 +420,57 @@ void  GATTSensorDataClient::onSubscribeResult(wb::RequestId requestId,
             }
         }
         break;
+    }
+}
+
+void GATTSensorDataClient::handleSendingLogbookData(const uint8_t *pData, uint32_t length)
+{
+
+    // Forward data to client in same format (offset + bytes)
+    // If length > 150, split in two notifications
+    memset(mDataMsgBuffer, 0, sizeof(mDataMsgBuffer));
+    mDataMsgBuffer[0] = DATA;
+    mDataMsgBuffer[1] = mLogFetchReference;
+    
+    // Copy offset
+    size_t writePos = 2;
+    memcpy(&(mDataMsgBuffer[writePos]), &mLogFetchOffset, sizeof(mLogFetchOffset));
+    writePos += sizeof(mLogFetchOffset);
+
+    size_t firstPartLen = (length>150) ? 150 : length;
+    size_t secondPartLen = (length == firstPartLen) ? 0 : length - firstPartLen;
+    DEBUGLOG("firstPartLen: %d, secondPartLen: %d", firstPartLen, secondPartLen);
+
+    if (firstPartLen > 0)
+    {
+        memcpy(&(mDataMsgBuffer[writePos]), pData, firstPartLen);
+        writePos += firstPartLen;
+        mLogFetchOffset += firstPartLen;
+    }
+    else
+    {
+        DEBUGLOG("End of file marker");
+    }
+
+    WB_RES::Characteristic dataCharValue;
+    dataCharValue.bytes = wb::MakeArray<uint8_t>(mDataMsgBuffer, writePos);
+    asyncPut(mDataCharResource, AsyncRequestOptions::Empty, dataCharValue);
+
+    if (secondPartLen > 0)
+    {
+        mDataMsgBuffer[0] = DATA_PART2;
+
+        // Calc and write second offset
+        writePos = 2;
+        memcpy(&(mDataMsgBuffer[writePos]), &mLogFetchOffset, sizeof(mLogFetchOffset));
+        writePos += sizeof(mLogFetchOffset);
+        // Copy second part data
+        memcpy(&(mDataMsgBuffer[writePos]), &(pData[firstPartLen]), secondPartLen);
+        writePos += secondPartLen;
+        mLogFetchOffset += secondPartLen;
+
+        dataCharValue.bytes = wb::MakeArray<uint8_t>(mDataMsgBuffer, writePos);
+        asyncPut(mDataCharResource, AsyncRequestOptions::Empty, dataCharValue);
     }
 }
 
@@ -403,6 +524,67 @@ void GATTSensorDataClient::onNotify(wb::ResourceId resourceId,
                 // Update the notification state so we know if to forward data to datapipe
                 mNotificationsEnabled = charValue.notifications.hasValue() ? charValue.notifications.getValue() : false;
                 DEBUGLOG("onNotify: mDataCharHandle. mNotificationsEnabled: %d", mNotificationsEnabled);
+            }
+            break;
+        }
+
+        case WB_RES::LOCAL::MEM_LOGBOOK_BYID_LOGID_DATA::LID:
+        {
+            GATTSensorDataClient::DataSub *ds = findDataSub(resourceId.localResourceId);
+            if (ds == nullptr)
+            {
+                DEBUGLOG("DataSub not found for resource: %u", resourceId);
+                return;
+            }
+
+            // Handle special case of subscribing logbook data
+            const auto &dataNotification = value.convertTo<const WB_RES::LogDataNotification &>();
+            const size_t length = dataNotification.bytes.size();
+            DEBUGLOG("Logbook data notification. offset: %d, length: %d", dataNotification.offset, length);
+
+
+            // Forward data to client in same format (offset + bytes)
+            // If length > 150, split in two notifications
+            memset(mDataMsgBuffer, 0, sizeof(mDataMsgBuffer));
+            mDataMsgBuffer[0] = DATA;
+            mDataMsgBuffer[1] = ds->clientReference;
+            
+            // Copy offset
+            size_t writePos = 2;
+            memcpy(&(mDataMsgBuffer[writePos]), &(dataNotification.offset), sizeof(dataNotification.offset));
+            writePos += sizeof(dataNotification.offset);
+            size_t firstPartLen = (length>150) ? 150 : length;
+            size_t secondPartLen = (length == firstPartLen) ? 0 : length - firstPartLen;
+            DEBUGLOG("firstPartLen: %d, secondPartLen: %d", firstPartLen, secondPartLen);
+            if (firstPartLen > 0)
+            {
+                memcpy(&(mDataMsgBuffer[writePos]), &(dataNotification.bytes[0]), firstPartLen);
+                writePos += firstPartLen;
+            }
+            else
+            {
+                DEBUGLOG("End of file marker");
+            }
+
+            WB_RES::Characteristic dataCharValue;
+            dataCharValue.bytes = wb::MakeArray<uint8_t>(mDataMsgBuffer, writePos);
+            asyncPut(mDataCharResource, AsyncRequestOptions::Empty, dataCharValue);
+
+            if (secondPartLen > 0)
+            {
+                mDataMsgBuffer[0] = DATA_PART2;
+
+                // Calc and write second offset
+                writePos = 2;
+                uint32_t secondOffset = dataNotification.offset + firstPartLen;
+                memcpy(&(mDataMsgBuffer[writePos]), &secondOffset, sizeof(secondOffset));
+                writePos += sizeof(secondOffset);
+                // Copy second part data
+                memcpy(&(mDataMsgBuffer[writePos]), &(dataNotification.bytes[firstPartLen]), secondPartLen);
+                writePos += secondPartLen;
+
+                dataCharValue.bytes = wb::MakeArray<uint8_t>(mDataMsgBuffer, writePos);
+                asyncPut(mDataCharResource, AsyncRequestOptions::Empty, dataCharValue);
             }
             break;
         }

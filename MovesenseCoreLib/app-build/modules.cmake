@@ -77,7 +77,7 @@ if (MOVESENSE_MODULE_YAML_FILES)
     set(MODULES_RESOURCES ${CMAKE_BINARY_DIR}/modules-resources.wbo)
     generate_wb_resources(
         modules-resources MODULES_RESOURCE_SOURCES
-        INCLUDE_DIRECTORIES ${WB_DIRECTORY}/include/whiteboard/builtinTypes
+        INCLUDE_DIRECTORIES ${MOVESENSE_CORE_LIBRARY}/resources/whiteboard/builtinTypes
         SOURCE_GROUP modules ${MOVESENSE_MODULE_YAML_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/*_root.yaml
         GENERATE CPP LIB
         CPP_DEPENDS wb-resources)

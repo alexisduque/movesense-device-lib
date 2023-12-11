@@ -58,6 +58,9 @@ private:
 
     bool mNotificationsEnabled;
 
+    uint32_t mLogIdToFetch;
+    uint32_t mLogFetchOffset;
+    uint8_t mLogFetchReference;
     // Data subscriptions
 
     struct DataSub {
@@ -75,7 +78,9 @@ private:
     uint8_t mDataMsgBuffer[158];
 
     DataSub* findDataSub(const wb::ResourceId resourceId);
+    DataSub* findDataSub(const wb::LocalResourceId localResourceId);
     DataSub* findDataSubByRef(const uint8_t clientReference);
 
     void handleIncomingCommand(const wb::Array<uint8> &commandData);
+    void handleSendingLogbookData(const uint8_t *pData, uint32_t length);
 };

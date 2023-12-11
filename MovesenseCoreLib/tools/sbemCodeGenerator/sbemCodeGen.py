@@ -3,6 +3,7 @@ from __future__ import print_function
 import sys
 import yaml
 import re
+import json
 import glob, os
 
 from SbemCodeGenFuncs import *
@@ -312,6 +313,7 @@ for k,v in sorted(resources.items()):
         v['SBEM_FRM'] = frmString
         v['SBEM_ID'] = id
         v['SBEM_PTH'] = resourceToSbemPath(k)
+        v['RES_PTH'] =k
         resourcesWithSimpleType[k] = v
         item = {'id': id,
                 '__property': '/',
@@ -323,7 +325,6 @@ for k,v in sorted(resources.items()):
     # didn't get FRM directly
     # study datatypes and try to get from there
     elif '$ref' in schema:
-#        print ("'$ref' in schema:: ", k)
         datatypename = schema['$ref'].split('/')[-1]
 #        print ("datatypename: ", datatypename)
 
@@ -337,6 +338,7 @@ for k,v in sorted(resources.items()):
                 v['SBEM_FRM'] = datatype['SBEM_FRM']
                 v['SBEM_ID'] = id
                 v['SBEM_PTH'] = resourceToSbemPath(k)
+                v['RES_PTH'] = k
 
                 resourcesWithSimpleType[k] = v
 
@@ -412,8 +414,10 @@ for item in items:
 
 items = u_items
 
+
+
 print("Generating C++ code. ", len(groups), " groups, ", len(items), " items")
-print("Current folder: ", os.getcwd())
+#print("Current folder: ", os.getcwd())
 
 with open("sbem_definitions.h", 'w') as f_h:
     with open("sbem_definitions.cpp", 'w') as f_cpp:
@@ -453,7 +457,7 @@ with open("sbem_definitions.h", 'w') as f_h:
             for subgrp in group['subgroups']:
                 if '__isArray' in subgrp and subgrp['__isArray']:
                     subgroupsContainArray = True
-                    arrayPath = "/" + subgrp["id"].replace("_","/")
+                    arrayPath = subgrp["WB_RES"]
 
                     elements = seekArrayElementsConfig(dataLoggerConfig, "resources", arrayPath, True)
                     break
@@ -501,6 +505,50 @@ with open("sbem_definitions.h", 'w') as f_h:
 
                 print(");", file=f_cpp)
 
+
+
+        # Re-order the items so that starter of the group is first
+        # Scan array twice. first collect start items, then add others
+        start_items = []
+        for item in items:
+            isFirstInArray = \
+                bool(item['id'] in arrayGroupStartItems and arrayGroupStartItems[item['id']])
+            isFirstInRootGroup = \
+                bool(item['id'] in rootGroupStartItems and rootGroupStartItems[item['id']])
+            isSinglePropItem = not isFirstInRootGroup and not isFirstInArray and item['__property'] == "/"
+        
+            if isFirstInRootGroup or isSinglePropItem:
+                group_path = item['SBEM_PTH']
+                # for actual groups, cut name at last "." (included)
+                if not isSinglePropItem:
+                    lastDotIdx = group_path.rfind('.')
+                    group_path = group_path[:lastDotIdx+1]
+
+                item['group_path'] = group_path
+                #print("\ngroup_path: ", group_path)
+                #print_group(item, 0, "START_ITEM:")
+                start_items.append(item)
+
+        sorted_items = []
+        for start_item in start_items:
+            group_path = start_item['group_path']
+            #print("Appending root item:", start_item['SBEM_PTH'])
+            sorted_items.append(start_item)
+            for item in items:
+                ## skip start_items, have been appended already
+                if item in start_items:
+                    continue
+
+                if item['SBEM_PTH'].startswith(group_path) and item['SBEM_PTH'][len(group_path)]=='.':
+                    #print("Appending item:", item['SBEM_PTH'])
+                    sorted_items.append(item)
+
+        # append the rest that have not yet been appended 
+        for item in items:
+            if item not in sorted_items:
+                sorted_items.append(item)
+
+        items = sorted_items
         # Now generate SBEM DescriptionItems array:
         #  declaration in h, implementation in cpp
         count, descriptorItemIds, itemIndexes = generateDescriptorArray(f_h, f_cpp, items, arrayGroupStartItems, rootGroupStartItems)
@@ -520,6 +568,7 @@ with open("sbem_definitions.h", 'w') as f_h:
         # ARRAY_BEGIN & END tags
         print("    ARRAY_BEGIN,", file=f_h)
         print("    ARRAY_END,", file=f_h)
+        print("    SAMPLES_ARRAY_BEGIN,", file=f_h)
 
         # end ID enum
         print("    SbemValueIds_COUNT,", file=f_h)
@@ -562,7 +611,9 @@ with open("sbem_definitions.h", 'w') as f_h:
             if '__isArrayGroup' in group and group['__isArrayGroup']:
                 subgroupsContainArray = True
 
-                elements = seekArrayElementsConfig(dataLoggerConfig, "resources", groupPath, True)
+                # print("__isArrayGroup:")
+                # print_group(group)
+                elements = seekArrayElementsConfig(dataLoggerConfig, "resources", group['WB_RES'], True)
 
             for i in elements:
                 groupId = group['id']

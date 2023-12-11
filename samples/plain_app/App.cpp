@@ -22,7 +22,7 @@ OPTIONAL_CORE_MODULE(BleNordicUART, false)
 OPTIONAL_CORE_MODULE(CustomGattService, true)
 
 // NOTE: It is inadvisable to enable both Logbook/DataLogger and EepromService without
-// explicit definition of Logbook memory area (see LOGBOOK_MEMORY_AREA macro in movesense.h).
+// explicit definition of Logbook memory area (see LOGBOOK_EEPROM_MEMORY_AREA macro in movesense.h).
 // Default setting is for Logbook to use the whole EEPROM memory area.
 
 // Define 16kB DEBUG message area
@@ -30,12 +30,11 @@ OPTIONAL_CORE_MODULE(CustomGattService, true)
 DEBUGSERVICE_BUFFER_SIZE(6, 120); // 6 lines, 120 characters total
 DEBUG_EEPROM_MEMORY_AREA(true, 0, 16384)
 // Rest of the EEPROM is for Logbook 
-LOGBOOK_MEMORY_AREA(16384, MEMORY_SIZE_FILL_REST);
+LOGBOOK_EEPROM_MEMORY_AREA(16384, MEMORY_SIZE_FILL_REST);
 
 APPINFO_NAME("Sample Plain");
 APPINFO_VERSION("1.1.0");
 APPINFO_COMPANY("Movesense");
 
-// NOTE: SERIAL_COMMUNICATION macro has been DEPRECATED
-BLE_COMMUNICATION(true)
+// NOTE: SERIAL_COMMUNICATION & BLE_COMMUNICATION macros have been DEPRECATED
 MOVESENSE_FEATURES_END()
