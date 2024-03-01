@@ -53,4 +53,7 @@ public:
     // Temp buffer for received data
     size_t mRxDataLen;
     uint8_t mRxDataBuffer[NUS_MAX_DATA_LEN];
+
+    uint16_t mCurrConnHandle;
+    size_t mSentCount;
 };

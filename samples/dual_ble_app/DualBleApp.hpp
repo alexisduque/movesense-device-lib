@@ -57,9 +57,9 @@ protected:
     void dpcHandler();
 
 private:
-    // void hrsNotificationChanged(bool enabled);
+    void hrsNotificationChanged(bool enabled);
 
-    // void handleNusDataRx(const wb::Array<uint8_t> rxDataArray);
+    void handleNusDataRx(const wb::Array<uint8_t> rxDataArray);
 
     wb::TimerId mTimer;
     struct InternalStates

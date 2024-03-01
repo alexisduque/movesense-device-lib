@@ -611,16 +611,37 @@ void GATTSensorDataClient::onNotify(wb::ResourceId resourceId,
                 return;
             }
 
+
+
             // Forward data to client
             memset(mDataMsgBuffer, 0, sizeof(mDataMsgBuffer));
             mDataMsgBuffer[0] = DATA;
             mDataMsgBuffer[1] = ds->clientReference;
 
+            size_t writePos = 2;
+            size_t firstPartLen = (length>150) ? 150 : length;
+            size_t secondPartLen = (length == firstPartLen) ? 0 : length - firstPartLen;
+            DEBUGLOG("firstPartLen: %d, secondPartLen: %d", firstPartLen, secondPartLen);
+
+            // Write the first part of notification value
             length = writeToSbemBuffer(&mDataMsgBuffer[2], sizeof(mDataMsgBuffer)-2, 0, resourceId.localResourceId, value);
+            writePos += firstPartLen;
 
             WB_RES::Characteristic dataCharValue;
-            dataCharValue.bytes = wb::MakeArray<uint8_t>(mDataMsgBuffer, length+2);
-            asyncPut(mDataCharResource, AsyncRequestOptions(NULL, 0, true), dataCharValue);
+            dataCharValue.bytes = wb::MakeArray<uint8_t>(mDataMsgBuffer, writePos);
+            asyncPut(mDataCharResource, AsyncRequestOptions::Empty, dataCharValue);
+
+            if (secondPartLen > 0)
+            {
+                mDataMsgBuffer[0] = DATA_PART2;
+                writePos = 2;
+                // Write the second part of data starting from offset "firstPartLen"
+                length = writeToSbemBuffer(&mDataMsgBuffer[2], sizeof(mDataMsgBuffer)-2, firstPartLen, resourceId.localResourceId, value);
+                writePos += secondPartLen;
+                // And send it
+                dataCharValue.bytes = wb::MakeArray<uint8_t>(mDataMsgBuffer, writePos);
+                asyncPut(mDataCharResource, AsyncRequestOptions::Empty, dataCharValue);
+            }
             return;
 
             break;

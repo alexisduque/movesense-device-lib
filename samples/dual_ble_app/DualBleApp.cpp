@@ -43,44 +43,42 @@ DualBleApp::~DualBleApp()
 {
 }
 
-// NOTE: HRS & NUS code commented out since 2.2.0 does not
-// support dual connection on HRS or NUS services
-//
-// void DualBleApp::hrsNotificationChanged(bool enabled)
-// {
-//     DEBUGLOG("DualBleApp::hrsNotificationChanged: %s, mStates.HrsEnabled: %d", enabled?"enabled":"disabled", mStates.HrsEnabled);
-//     if (enabled == mStates.HrsEnabled) return;
+void DualBleApp::hrsNotificationChanged(bool enabled)
+{
+    DEBUGLOG("DualBleApp::hrsNotificationChanged: %s, mStates.HrsEnabled: %d", enabled?"enabled":"disabled", mStates.HrsEnabled);
+    if (enabled == mStates.HrsEnabled) return;
 
-//     if (enabled)
-//     {
-//         stopShutdownTimer();
-//         asyncSubscribe(WB_RES::LOCAL::MEAS_HR());
-//     }
-//     else
-//     {
-//         asyncUnsubscribe(WB_RES::LOCAL::MEAS_HR());
-//         if (mStates.PeersConnected == 0)
-//         {
-//             startShutdownTimer();
-//         }
-//     }
+    if (enabled)
+    {
+        stopShutdownTimer();
+        asyncSubscribe(WB_RES::LOCAL::MEAS_HR());
+    }
+    else
+    {
+        asyncUnsubscribe(WB_RES::LOCAL::MEAS_HR());
+        if (mStates.PeersConnected == 0)
+        {
+            startShutdownTimer();
+        }
+    }
 
-//     mStates.HrsEnabled = enabled;
-// }
+    mStates.HrsEnabled = enabled;
+}
 
-// void DualBleApp::handleNusDataRx(const wb::Array<uint8_t> rxDataArray)
-// {
-//     // As a sample do ROT-13 on the data and send it back
-//     uint8_t buffer[160];
-//     for(size_t i=0; i<rxDataArray.size(); i++)
-//     {
-//         buffer[i] = (uint8_t)(((uint16_t)rxDataArray[i] + 13) & 0xFF);
-//     }
+void DualBleApp::handleNusDataRx(const wb::Array<uint8_t> rxDataArray)
+{
+    DEBUGLOG("DualBleApp::handleNusDataRx");
+    // As a sample do ROT-13 on the data and send it back
+    uint8_t buffer[160];
+    for(size_t i=0; i<rxDataArray.size(); i++)
+    {
+        buffer[i] = (uint8_t)(((uint16_t)rxDataArray[i] + 13) & 0xFF);
+    }
 
-//     WB_RES::NUSData dataOut;
-//     dataOut.bytes = wb::MakeArray<uint8_t>(buffer, rxDataArray.size());
-//     asyncPost(WB_RES::LOCAL::COMM_BLE_NUS(), AsyncRequestOptions::ForceAsync, dataOut);
-// }
+    WB_RES::NUSData dataOut;
+    dataOut.bytes = wb::MakeArray<uint8_t>(buffer, rxDataArray.size());
+    asyncPost(WB_RES::LOCAL::COMM_BLE_NUS(), AsyncRequestOptions::ForceAsync, dataOut);
+}
 
 bool DualBleApp::initModule()
 {
@@ -110,15 +108,10 @@ bool DualBleApp::startModule()
     // Subscribe to BLE peers list changes
     asyncSubscribe(WB_RES::LOCAL::COMM_BLE_PEERS());
 
-// NOTE: HRS & NUS code commented out since 2.2.0 does not
-// support dual connection on HRS or NUS services
-//
-    // // Subscribe to HRS state notifications
-    // asyncSubscribe(WB_RES::LOCAL::COMM_BLE_HRS());
+    // Subscribe to HRS state notifications
+    asyncSubscribe(WB_RES::LOCAL::COMM_BLE_HRS());
 
-    // // Subscribe to incoming NUS data
-    // asyncSubscribe(WB_RES::LOCAL::COMM_BLE_NUS());
-
+    // NUS is subscribed in the connection change code
     return true;
 }
 
@@ -128,14 +121,11 @@ void DualBleApp::stopModule()
     stopTimer(mTimer);
     mTimer = wb::ID_INVALID_TIMER;
 
-// NOTE: HRS & NUS code commented out since 2.2.0 does not
-// support dual connection on HRS or NUS services
-//
-    // // un-Subscribe from incoming NUS data
-    // asyncUnsubscribe(WB_RES::LOCAL::COMM_BLE_NUS());
+    // un-Subscribe from incoming NUS data
+    asyncUnsubscribe(WB_RES::LOCAL::COMM_BLE_NUS());
 
-    // // un-Subscribe from HRS state notifications
-    // asyncUnsubscribe(WB_RES::LOCAL::COMM_BLE_HRS());
+    // un-Subscribe from HRS state notifications
+    asyncUnsubscribe(WB_RES::LOCAL::COMM_BLE_HRS());
 
     // un-Subscribe from BLE peers list changes
     asyncUnsubscribe(WB_RES::LOCAL::COMM_BLE_PEERS());
@@ -151,27 +141,24 @@ void DualBleApp::onNotify(wb::ResourceId resourceId,
     // Heart rate notification
     switch(resourceId.localResourceId)
     {
-// NOTE: HRS & NUS code commented out since 2.2.0 does not
-// support dual connection on HRS or NUS services
-//
-    // case WB_RES::LOCAL::MEAS_HR::LID:
-    //     {
-    //         // Get average heart rate data
-    //         const WB_RES::HRData& hrdata = value.convertTo<const WB_RES::HRData&>();
-    //         uint16_t hr = hrdata.average;
+    case WB_RES::LOCAL::MEAS_HR::LID:
+        {
+            // Get average heart rate data
+            const WB_RES::HRData& hrdata = value.convertTo<const WB_RES::HRData&>();
+            uint16_t hr = hrdata.average;
 
-    //         DEBUGLOG("HRS update: %d, rr_count: %d", hr, hrdata.rrData.size());
+            DEBUGLOG("HRS update: %d, rr_count: %d", hr, hrdata.rrData.size());
 
-    //         // Forward hr + rr data to HRS module
-    //         WB_RES::HRSData hrsData;
-    //         hrsData.hr = hr;
-    //         if (hrdata.rrData.size()>0)
-    //         {
-    //             hrsData.rr = wb::MakeArray<uint16_t>(&(hrdata.rrData[0]), hrdata.rrData.size());
-    //         }
-    //         asyncPost(WB_RES::LOCAL::COMM_BLE_HRS(), AsyncRequestOptions::Empty, hrsData);
-    //     }
-    //     break;
+            // Forward hr + rr data to HRS module
+            WB_RES::HRSData hrsData;
+            hrsData.hr = hr;
+            if (hrdata.rrData.size()>0)
+            {
+                hrsData.rr = wb::MakeArray<uint16_t>(&(hrdata.rrData[0]), hrdata.rrData.size());
+            }
+            asyncPost(WB_RES::LOCAL::COMM_BLE_HRS(), AsyncRequestOptions::Empty, hrsData);
+        }
+        break;
 
     // BLE connection notification
     case WB_RES::LOCAL::COMM_BLE_PEERS::LID:
@@ -189,11 +176,9 @@ void DualBleApp::onNotify(wb::ResourceId resourceId,
                 DEBUGLOG("BLE Peer CONNECTED. Number of devices: %d", mStates.PeersConnected);
                 if (mStates.PeersConnected==1)
                 {
-// NOTE: HRS & NUS code commented out since 2.2.0 does not
-// support dual connection on HRS or NUS services
-//
-                    // // Start listening to Nordic UART data
-                    // asyncSubscribe(WB_RES::LOCAL::COMM_BLE_NUS());
+                    // Start listening to Nordic UART data
+                    DEBUGLOG("asyncSubscribe COMM_BLE_NUS");
+                    asyncSubscribe(WB_RES::LOCAL::COMM_BLE_NUS());
                 }
                 break;
 
@@ -206,10 +191,7 @@ void DualBleApp::onNotify(wb::ResourceId resourceId,
                 if (mStates.PeersConnected==0)
                 {
                     startShutdownTimer();
-// NOTE: HRS & NUS code commented out since 2.2.0 does not
-// support dual connection on HRS or NUS services
-//
-                    // asyncUnsubscribe(WB_RES::LOCAL::COMM_BLE_NUS());
+                    asyncUnsubscribe(WB_RES::LOCAL::COMM_BLE_NUS());
                 }
                 break;
 
@@ -226,24 +208,18 @@ void DualBleApp::onNotify(wb::ResourceId resourceId,
             const bool hrsNotifEnabled = value.convertTo<const WB_RES::HRSState&>().notificationEnabled;
             DEBUGLOG("COMM_BLE_HRS: hrsNotifEnabled: %d", hrsNotifEnabled);
 
-// NOTE: HRS & NUS code commented out since 2.2.0 does not
-// support dual connection on HRS or NUS services
-//
-            // hrsNotificationChanged(hrsNotifEnabled);
+            hrsNotificationChanged(hrsNotifEnabled);
         }
         break;
 
     // NUS data notification
     case WB_RES::LOCAL::COMM_BLE_NUS::LID:
         {
-// NOTE: HRS & NUS code commented out since 2.2.0 does not
-// support dual connection on HRS or NUS services
-//
-            // // Get whiteborad routing table notification
-            // auto receivedDataArray = value.convertTo<const WB_RES::NUSData&>().bytes;
-            // DEBUGLOG("COMM_BLE_NUS: %d bytes received.", receivedDataArray.size());
+            // Get whiteborad routing table notification
+            auto receivedDataArray = value.convertTo<const WB_RES::NUSData&>().bytes;
+            DEBUGLOG("COMM_BLE_NUS: %d bytes received.", receivedDataArray.size());
 
-            // handleNusDataRx(receivedDataArray);
+            handleNusDataRx(receivedDataArray);
         }
         break;
     }
