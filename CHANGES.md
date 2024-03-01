@@ -1,5 +1,23 @@
 
-## Version 2.2.0.56f9997  (updated: marked with **(*)** #6237198 ) ##
+## Version 2.2.1.4bb04a3 ##
+
+### Whats new:
+- Bugfix: Live-streams missing DATA_PART2 on gatt_sensordata_app
+- Bugfix: BLE connection gets stuck with Android 14 [Issue #117]
+- Bugfix: BleStandardHRS only supports single BLE connection
+- Bugfix: BleNordicUART only supports single BLE connection
+
+### Known Bugs:
+- /Comm/Ble/Scan only returns one result (since 2.0)
+- Each HR recording seems to start with high HR like 160bpm
+- CustomGATTService cuts some incoming data
+- Sensor stream stops on dual connection disconnect
+- Datalogger saves wrong format for nullable uint8
+- IMU9 Timestamp dont indicate data loss
+- /Gear/ID returns ok if HR-chip has allocated studs
+- sbem array-lengths config fails for /Meas/HR
+
+## Version 2.2.0.56f9997 ##
 
 ### Whats new:
 - Feature: Two BLE Connections (Issue #103)
@@ -12,7 +30,7 @@
 - Feature: Time sync in Logbook logs
 
 ####
-- *New Sample: dual_ble_app* **(*)**
+- New Sample: dual_ble_ecgrr_app
 - New Sample: offline_gatt_app
 - New Sample: simple_ecglogger_app
 - Improved Sample: Log fetch support for gatt_sensordata_app
@@ -40,8 +58,8 @@
 
 
 ### Known Bugs:
-- *BleStandardHRS only supports single BLE connection* **(*)**
-- *BleNordicUART only supports single BLE connection* **(*)**
+- BleStandardHRS only supports single BLE connection
+- BleNordicUART only supports single BLE connection
 - /Comm/Ble/Scan only returns one result (since 2.0)
 - Each HR recording seems to start with high HR like 160bpm
 - CustomGATTService cuts some incoming data
