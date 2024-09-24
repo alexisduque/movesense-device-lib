@@ -6,7 +6,6 @@
 #include "OfflineStorageClient.h"
 
 #include "common/core/debug.h"
-#include "platform/bsp/rtc.hpp"
 #include "sbem/Sbem.hpp"
 #include "oswrapper/thread.h"
 
