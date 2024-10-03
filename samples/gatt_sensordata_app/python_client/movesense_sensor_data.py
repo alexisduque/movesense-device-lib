@@ -13,6 +13,7 @@ from bleak import BleakClient
 from bleak import _logger as logger
 from bleak import discover
 from functools import reduce
+from typing import List
 import struct
 import sys
 
@@ -54,6 +55,11 @@ class DataView:
         binary = self.__get_binary(start_index, bytes_to_read)
         return struct.unpack('<I', binary)[0]  # <f for little endian
 
+    def get_int_32(self, start_index):
+        bytes_to_read = 4
+        binary = self.__get_binary(start_index, bytes_to_read)
+        return struct.unpack('<i', binary)[0]  # < for little endian
+
     def get_float_32(self, start_index):
         bytes_to_read = 4
         binary = self.__get_binary(start_index, bytes_to_read)
@@ -77,7 +83,7 @@ PACKET_TYPE_DATA = 2
 PACKET_TYPE_DATA_PART2 = 3
 ongoing_data_update = None
 
-async def run_ble_client(end_of_serial: str, queue: asyncio.Queue):
+async def run_ble_client( end_of_serial: str, sensor_types: List[str], queue: asyncio.Queue):
 
     # Check the device is available
     devices = await discover()
@@ -106,16 +112,34 @@ async def run_ble_client(end_of_serial: str, queue: asyncio.Queue):
         d = DataView(data)
 
         packet_type= d.get_uint_8(0)
+        reference = d.get_uint_8(1)
+
         global ongoing_data_update
         # print("packet ", packet_type, ", ongoing:",ongoing_data_update)
         if packet_type == PACKET_TYPE_DATA:
+            # ECG (reference 100) fits in one packet
+            if reference == 100:
+                timestamp = d.get_uint_32(2)
+            
+                for i in range(0,16):
+                    # Interpolate timestamp within the data notification
+                    row_timestamp = timestamp + int(i*1000/200)
+                    ## ECG package starts with timestamp and then array of 16 samples
+                    # Sample scaling is 0.38 uV/sample
+                    sample_mV = d.get_int_32(6+i*4) * 0.38 *0.001
+                    msg_row = "ECG,{},{:.3f}".format(row_timestamp, sample_mV)
+                
+                    # queue message for later consumption (output)
+                    await queue.put(msg_row)
+
+            else:
             # print("PACKET_TYPE_DATA")
             # Store 1st part of the incoming data
-            ongoing_data_update = d
-        
+                ongoing_data_update = d
+    
         elif packet_type == PACKET_TYPE_DATA_PART2:
             # print("PACKET_TYPE_DATA_PART2. len:",len(data))
-            
+                
             # Create combined DataView that contains the whole data packet
             # (skip type_id + ref num of the data_part2)
             d = DataView( ongoing_data_update.array + data[2:])
@@ -132,7 +156,7 @@ async def run_ble_client(end_of_serial: str, queue: asyncio.Queue):
                 ## Each "row" therefore starts (3*4 bytes after each other interleaving to acc, gyro and magn)
                 offset = 6 + i * 3* 4
                 skip = 3*8*4
-                msg_row = "{},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f}".format(row_timestamp
+                msg_row = "IMU9,{},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f}".format(row_timestamp
                                                             ,  d.get_float_32(offset)
                                                             ,  d.get_float_32(offset+4)
                                                             ,  d.get_float_32(offset+8)
@@ -156,7 +180,10 @@ async def run_ble_client(end_of_serial: str, queue: asyncio.Queue):
             logger.info("Enabling notifications")
             await client.start_notify(NOTIFY_CHARACTERISTIC_UUID, notification_handler)
             logger.info("Subscribing datastream")
-            await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, bytearray([1, 99])+bytearray("/Meas/IMU9/104", "utf-8"), response=True)
+            if "ECG" in sensor_types:
+                await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, bytearray([1, 100])+bytearray("/Meas/ECG/200", "utf-8"), response=True)
+            if "IMU9" in sensor_types:
+                await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, bytearray([1, 99])+bytearray("/Meas/IMU9/104", "utf-8"), response=True)
 
             # Run until disconnect event is set
             await disconnected_event.wait()
@@ -171,6 +198,7 @@ async def run_ble_client(end_of_serial: str, queue: asyncio.Queue):
             if status:
                 logger.info("Unsubscribe")
                 await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, bytearray([2, 99]), response=True)
+                await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, bytearray([2, 100]), response=True)
                 logger.info("Stop notifications")
                 await client.stop_notify(NOTIFY_CHARACTERISTIC_UUID)
             
@@ -186,10 +214,11 @@ async def run_ble_client(end_of_serial: str, queue: asyncio.Queue):
 
 
 
-async def main(end_of_serial: str):
+async def main(end_of_serial: str, sensor_types: List[str]):
 
     queue = asyncio.Queue()
-    client_task = run_ble_client(end_of_serial, queue)
+
+    client_task = run_ble_client(end_of_serial, sensor_types, queue)
     consumer_task = run_queue_consumer(queue)
     await asyncio.gather(client_task, consumer_task)
     logger.info("Main method done.")
@@ -200,8 +229,19 @@ if __name__ == "__main__":
 
     # print usage if command line arg not given
     if len(sys.argv)<2:
-        print("Usage: python movesense_sensor_data <end_of_sensor_name>")
-        exit(1);
+        print("Usage: python movesense_sensor_data <end_of_sensor_name> <sensor_type>")
+        print("sensor_type must be either 'IMU9', 'ECG', or omitted to run both")
+        exit(1)
     end_of_serial = sys.argv[1]
+    sensor_type = sys.argv[2] if len(sys.argv) > 2 else ""
+    
 
-    asyncio.run(main(end_of_serial))
+    # Ensure valid sensor type and run the corresponding function
+    if sensor_type == "":
+        sensor_types = ["IMU9", "ECG"]
+    elif sensor_type in ["IMU9", "ECG"]:
+        sensor_types = [sensor_type]
+    else:
+        print("Error: sensor_type must be either 'IMU9' or 'ECG'")
+        exit(1)
+    asyncio.run(main(end_of_serial, sensor_types))
