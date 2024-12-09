@@ -2,7 +2,6 @@
 
 #include "OfflineStorageClient.h"
 #include "common/core/debug.h"
-#include "../../../nea/platform/bsp/rtc.hpp"
 
 #include "component_led/resources.h"
 #include "component_max3000x/resources.h"

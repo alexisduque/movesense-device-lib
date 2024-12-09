@@ -1,11 +1,32 @@
+## Version 2.3.0.a13de8e ##
+
+### Whats new:
+
+- Feature: Fast data transfer for EEPROM variants
+- Feature: Wipe datamem on DFU
+- Feature: ECG given as voltage
+- Feature: 16-bit ECG (mV) storage on default firmware's (MD & sport)
+- Feature: Gatt SensorData Protocol on default firmware (MD & sport)
+
+- Bugfix: HR recording seems to start with high HR
+- Bugfix: IMU9 Timestamps don't indicate data loss
+
+
+### Known Bugs:
+- /Comm/Ble/Scan only returns one result (since 2.0)
+- CustomGATTService cuts some incoming data
+- Datalogger saves wrong format for nullable uint8
+- /Gear/ID returns ok if HR-chip has allocated studs
+- sbem array-lengths config fails for /Meas/HR
+
+### Notes:
+- The "Wipe datamem on DFU" results a 30 second delay when sensor is set to DFU mode. During the wipe the LED blinks rapidly indicating the data wipe.
 
 ## Version 2.2.1.4bb04a3 ##
 
 ### Whats new:
 - Bugfix: Live-streams missing DATA_PART2 on gatt_sensordata_app
 - Bugfix: BLE connection gets stuck with Android 14 [Issue #117]
-- Bugfix: BleStandardHRS only supports single BLE connection
-- Bugfix: BleNordicUART only supports single BLE connection
 
 ### Known Bugs:
 - /Comm/Ble/Scan only returns one result (since 2.0)
@@ -16,6 +37,10 @@
 - IMU9 Timestamp dont indicate data loss
 - /Gear/ID returns ok if HR-chip has allocated studs
 - sbem array-lengths config fails for /Meas/HR
+
+### Notes:
+- Renamed *LOGBOOK_MEMORY_AREA* to *LOGBOOK_EEPROM_MEMORY_AREA*
+- **NOTE**: The Logbook json format has been changed from 2.1.x to be more efficient in JSON conversion.
 
 ## Version 2.2.0.56f9997 ##
 
