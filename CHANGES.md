@@ -1,3 +1,6 @@
+## Fixed default firmware: 2.3.0 ##
+- Bugfix: GSP protocol doesn't start
+
 ## Version 2.3.0.a13de8e ##
 
 ### Whats new:
