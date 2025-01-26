@@ -1,0 +1,1 @@
+This file causes the (Debub-) build to skip when running the build_movesense.sh --build-all-(apps/samples)-debug
