@@ -1,3 +1,3 @@
-About this app
+Movesense LIBM Firmware
 
-This app uses the Movesense rr_from_ecg -module to calculate RR intervals. To compile this app, the module needs to be unpacked into "rr_from_ecg" folder inside this directory.
+This app is the LIBM firmware for STV assesment with 16g Acceleration, longer sleep timeout and 1666Hz accelerometer sampling frequency
